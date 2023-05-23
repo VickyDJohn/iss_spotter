@@ -35,3 +35,45 @@ exports.fetchCoordsByIp = (ip, callback) => {
     callback(null, coordinates);
   });
 };
+
+exports.fetchISSFlyOverTimes = function(coords, callback) {
+  const { latitude, longitude } = coords;
+  const url = `https://iss-flyover.herokuapp.com/json/?lat=${latitude}&lon=${longitude}`;
+
+  request(url, (error, response, body) => {
+    if (error) {
+      callback(error, null);
+      return;
+    }
+
+    if (response.statusCode !== 200) {
+      callback(new Error(`Request failed with status code ${response.statusCode}`), null);
+      return;
+    }
+
+    const passes = JSON.parse(body).response;
+    callback(null, passes);
+  });
+};
+
+exports.nextISSTimesForMyLocation = function(callback) {
+  exports.fetchMyIp((error, ip) => {
+    if (error) {
+      return callback(error, null);
+    }
+
+    exports.fetchCoordsByIp(ip, (error, loc) => {
+      if (error) {
+        return callback(error, null);
+      }
+
+      exports.fetchISSFlyOverTimes(loc, (error, nextPasses) => {
+        if (error) {
+          return callback(error, null);
+        }
+
+        callback(null, nextPasses);
+      });
+    });
+  });
+};
