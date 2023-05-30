@@ -3,7 +3,7 @@ const request = require('request');
 const ipUrl = 'https://api64.ipify.org/?format=json';
 const coordUrl = 'http://ipwho.is/174.4.104.208';
 
-exports.fetchMyIp = (callback) => {
+fetchMyIp = (callback) => {
   request(ipUrl, (error, response, body) => {
     if (error) {
       return callback(error);
@@ -18,7 +18,7 @@ exports.fetchMyIp = (callback) => {
   });
 };
 
-exports.fetchCoordsByIp = (ip, callback) => {
+fetchCoordsByIp = (ip, callback) => {
   request(coordUrl, (error, response, body) => {
     if (error) {
       callback(error, null);
@@ -29,14 +29,14 @@ exports.fetchCoordsByIp = (ip, callback) => {
       const message = `Success status was ${coord.success}. Server message says: ${coord.message} when fetching for IP ${coord.ip}`;
       callback(Error(message), null);
       return;
-    } 
+    }
 
     const coordinates = { latitude: coord.latitude, longitude: coord.longitude };
     callback(null, coordinates);
   });
 };
 
-exports.fetchISSFlyOverTimes = function(coords, callback) {
+fetchISSFlyOverTimes = function(coords, callback) {
   const { latitude, longitude } = coords;
   const url = `https://iss-flyover.herokuapp.com/json/?lat=${latitude}&lon=${longitude}`;
 
@@ -56,18 +56,18 @@ exports.fetchISSFlyOverTimes = function(coords, callback) {
   });
 };
 
-exports.nextISSTimesForMyLocation = function(callback) {
-  exports.fetchMyIp((error, ip) => {
+nextISSTimesForMyLocation = function(callback) {
+  fetchMyIp((error, ip) => {
     if (error) {
       return callback(error, null);
     }
 
-    exports.fetchCoordsByIp(ip, (error, loc) => {
+    fetchCoordsByIp(ip, (error, loc) => {
       if (error) {
         return callback(error, null);
       }
 
-      exports.fetchISSFlyOverTimes(loc, (error, nextPasses) => {
+      fetchISSFlyOverTimes(loc, (error, nextPasses) => {
         if (error) {
           return callback(error, null);
         }
@@ -77,3 +77,5 @@ exports.nextISSTimesForMyLocation = function(callback) {
     });
   });
 };
+
+module.exports = { nextISSTimesForMyLocation, fetchMyIp, fetchCoordsByIp, fetchISSFlyOverTimes };
